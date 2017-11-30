@@ -1,30 +1,33 @@
 package es.usc.citius.utils.generator.model;
 
-import es.usc.citius.utils.generator.GenerationStrategy;
-import es.usc.citius.utils.generator.annotations.AllowedValues;
+import es.usc.citius.utils.generator.annotations.RandomObject;
+import es.usc.citius.utils.generator.annotations.RandomString;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Person {
-    @AllowedValues(GenerationStrategy.GENERATE)
-    private Name name;
-    @AllowedValues(GenerationStrategy.GENERATE)
+    @RandomObject
+    private ArrayList<Name> name;
+    @RandomObject
     private Address address;
-    @AllowedValues(value = GenerationStrategy.GENERATE, length = 9)
+    @RandomString(length = 9)
     private String id;
-    @AllowedValues(strings = {"666777888", "876947521", "554671892"})
+    @RandomString(from = {"666777888", "876947521", "554671892"})
     private String phoneNumber;
 
     public Person(){}
-    public Person(Name name, Address address, String id, String phoneNumber) {
+    public Person(ArrayList<Name> name, Address address, String id, String phoneNumber) {
         this.name = name;
         this.address = address;
         this.id = id;
         this.phoneNumber = phoneNumber;
     }
 
-    public Name getName() {
+    public List<Name> getName() {
         return name;
     }
-    public void setName(Name name) {
+    public void setName(ArrayList<Name> name) {
         this.name = name;
     }
     public Address getAddress() {

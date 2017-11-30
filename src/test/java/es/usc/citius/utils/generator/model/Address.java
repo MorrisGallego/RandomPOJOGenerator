@@ -1,16 +1,16 @@
 package es.usc.citius.utils.generator.model;
 
-import es.usc.citius.utils.generator.GenerationStrategy;
-import es.usc.citius.utils.generator.annotations.AllowedValues;
+import es.usc.citius.utils.generator.annotations.RandomInt;
+import es.usc.citius.utils.generator.annotations.RandomString;
 
 public class Address {
-    @AllowedValues(strings = {"Calle 1", "Calle 2", "Calle 3", "Calle 4", "Calle 5", "Calle 6", "Calle 7", "Calle 8", "Calle 9"})
+    @RandomString(from = {"Calle 1", "Calle 2", "Calle 3", "Calle 4", "Calle 5", "Calle 6", "Calle 7", "Calle 8", "Calle 9"})
     private String street;
-    @AllowedValues(value = GenerationStrategy.GENERATE, min = 0, max = 25)
+    @RandomInt(min = 0, max = 50)
     private int number;
-    @AllowedValues(strings = {"A", "B", "C", "D", "E"})
+    @RandomString(from = {"A", "B", "C", "D", "E"})
     private String door;
-    @AllowedValues(strings = {"17075", "15701", "36600", "28080"})
+    @RandomString(from = {"17075", "15701", "36600", "28080"})
     private String postalCode;
 
     public Address(){}

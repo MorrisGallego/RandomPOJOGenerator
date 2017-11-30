@@ -1,30 +1,33 @@
 package es.usc.citius.utils.generator.model;
 
-import es.usc.citius.utils.generator.annotations.AllowedValues;
+import es.usc.citius.utils.generator.annotations.RandomString;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class Name {
-    @AllowedValues(strings = {"Manolo", "Paquita", "Jimeno", "Leonarda"})
+    @RandomString(from = {"Manolo", "Paquita", "Jimeno", "Leonarda"})
     private String firstname;
-    @AllowedValues(strings = {"Smith", "Jackson", "Tribiani", "Geller"})
-    private String lastname;
+    @RandomString(from = {"Smith", "Jackson", "Tribiani", "Geller"}, count = 2)
+    private List<String> lastname;
 
     public Name(){}
     public Name(String firstname, String lastname) {
         this.firstname = firstname;
-        this.lastname = lastname;
+        this.lastname = Arrays.asList(lastname);
     }
 
     public String getFirstname() {
         return firstname;
     }
-    public String getLastname() {
+    public List<String> getLastname() {
         return lastname;
     }
 
     public void setFirstname(String firstname) {
         this.firstname = firstname;
     }
-    public void setLastname(String lastname) {
+    public void setLastname(List<String> lastname) {
         this.lastname = lastname;
     }
 

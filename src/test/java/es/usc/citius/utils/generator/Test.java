@@ -6,8 +6,7 @@ import java.util.List;
 
 public class Test {
     public static void main(String[] args){
-        List<Person> generated = RandomGenerator.generate(10, Person.class);
-
-        System.out.println(generated);
+        List<Person> gen = (List<Person>) RandomGenerator.forType(Person.class).generate(5);
+        System.out.println(gen);
     }
 }

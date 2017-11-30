@@ -1,110 +1,367 @@
 package es.usc.citius.utils.generator;
 
-import es.usc.citius.utils.generator.annotations.AllowedValues;
+import es.usc.citius.utils.generator.annotations.*;
+import es.usc.citius.utils.generator.exceptions.InvalidTypeForAnnotationException;
+import es.usc.citius.utils.generator.generators.*;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class RandomGenerator<T> {
     private Class<T> _type;
 
-    public RandomGenerator(Class<T> type){
+    private RandomGenerator(Class<T> type){
         this._type = type;
     }
 
-    public T random(){
-        ThreadLocalRandom rnd = ThreadLocalRandom.current();
-        T instance = null;
-        try {
-            instance = _type.newInstance();
+    private boolean isTypeOrArrayOfType(Field field, Class type){
+        return isType(field, type) || isArrayOfType(field, type);
+    }
+    private boolean isArrayOfType(Field field, Class type){
+        return isArray(field) && getListType(field).isAssignableFrom(type);
+    }
+    private Class getListType(Field field){
+        return ((Class)((ParameterizedType)field.getGenericType()).getActualTypeArguments()[0]);
+    }
+    private boolean isType(Field field, Class type){
+        return type.isAssignableFrom(field.getType());
+    }
+    private boolean isArray(Field field){
+        return isType(field, List.class);
+    }
 
+    private T processAnnotations(T instance) throws InvalidTypeForAnnotationException {
+        instance = processStringFields(instance);
+        instance = processDoubleFields(instance);
+        instance = processIntFields(instance);
+        instance = processFloatFields(instance);
+        instance = processLongFields(instance);
+        instance = processBooleanFields(instance);
+        instance = processObjectFields(instance);
+
+        return instance;
+    }
+    private T processStringFields(T instance) throws InvalidTypeForAnnotationException {
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
+        try {
             Class currentClass = this._type;
 
             while(currentClass.getSuperclass() != null){
                 for(Field field: currentClass.getDeclaredFields()){
                     field.setAccessible(true);
 
-                    AllowedValues annotation = field.getAnnotation(AllowedValues.class);
-
-                    if(annotation != null){
-                        if(annotation.value().equals(GenerationStrategy.GENERATE)){
-                            if(List.class.isAssignableFrom(field.getType())){
-                                int count = annotation.length() > 0 ? annotation.length() : rnd.nextInt(annotation.minLength(), annotation.maxLength()+1);
-
-                                List values = new ArrayList();
-                                Class type = ((Class)((ParameterizedType)field.getGenericType()).getActualTypeArguments()[0]);
-
-                                RandomGenerator generator = new RandomGenerator(type);
-
-                                for(int i=0; i<count; i++)
-                                    values.add(generator.random());
-
-                                field.set(instance, values);
-                            }
-                            else if(field.getType().isAssignableFrom(String.class)) {
-                                if(annotation.length() > -1){
-                                    String characters = "abcdefghijklmnopqrstuvwxyz";
-                                    char[] chars = characters.concat(characters.toUpperCase()).toCharArray();
-
-                                    StringBuilder sb = new StringBuilder();
-                                    for (int i = 0; i < annotation.length(); i++)
-                                        sb.append(chars[rnd.nextInt(chars.length)]);
-
-                                    field.set(instance, sb.toString());
-                                }
-                                else
-                                    field.set(instance, UUID.randomUUID().toString());
-                            }
-                            else if(field.getType().isAssignableFrom(Integer.class) || field.getType().isAssignableFrom(int.class))
-                                field.set(instance, rnd.nextInt(new Double(annotation.min()).intValue(), new Double(annotation.max()).intValue() + 1));
-
-                            else if(field.getType().isAssignableFrom(Long.class) || field.getType().isAssignableFrom(long.class))
-                                field.set(instance, rnd.nextLong(new Double(annotation.min()).longValue(), new Double(annotation.max()).longValue() + 1));
-
-                            else if(field.getType().isAssignableFrom(Double.class) || field.getType().isAssignableFrom(double.class))
-                                field.set(instance, rnd.nextDouble(annotation.min(), annotation.max() + 1));
-
-                            else if(field.getType().isAssignableFrom(Float.class) || field.getType().isAssignableFrom(float.class))
-                                field.set(instance, new Double(rnd.nextDouble(annotation.min(), annotation.max() + 1)).floatValue());
-
-                            else if(field.getType().isAssignableFrom(Boolean.class) || field.getType().isAssignableFrom(boolean.class))
-                                field.set(instance, rnd.nextBoolean());
-
-                            else
-                                field.set(instance, new RandomGenerator<>(field.getType()).random());
-                        }
-                        else if(field.getType().isAssignableFrom(String.class)){
-                            String [] allowedValues = annotation.strings();
-                            field.set(instance, allowedValues[rnd.nextInt(allowedValues.length)]);
-                        }
-                        else if(field.getType().isAssignableFrom(Integer.class) || field.getType().isAssignableFrom(int.class)){
-                            int [] allowedValues = annotation.ints();
-                            field.set(instance, allowedValues[rnd.nextInt(allowedValues.length)]);
-                        }
-                        else if(field.getType().isAssignableFrom(Long.class) || field.getType().isAssignableFrom(long.class)){
-                            long [] allowedValues = annotation.longs();
-                            field.set(instance, allowedValues[rnd.nextInt(allowedValues.length)]);
-                        }
-                        else if(field.getType().isAssignableFrom(Double.class) || field.getType().isAssignableFrom(double.class)) {
-                            double [] allowedValues = annotation.doubles();
-                            field.set(instance, allowedValues[rnd.nextInt(allowedValues.length)]);
-                        }
-                        else if(field.getType().isAssignableFrom(Float.class) || field.getType().isAssignableFrom(float.class)) {
-                            float [] allowedValues = annotation.floats();
-                            field.set(instance, allowedValues[rnd.nextInt(allowedValues.length)]);
-                        }
+                    if(!field.isAnnotationPresent(RandomString.class)){
+                        continue;
                     }
 
-                    field.setAccessible(false);
+                    if(!isTypeOrArrayOfType(field, String.class)){
+                        throw new InvalidTypeForAnnotationException(field.getType(), RandomString.class);
+                    } else {
+                        RandomString annotation = field.getAnnotation(RandomString.class);
+
+                        int count = annotation.count() >= 0 ? annotation.count() : rnd.nextInt(annotation.minCount(), annotation.maxCount()+1);
+                        String [] from = annotation.from();
+                        int length = annotation.length();
+                        int maxLength = annotation.maxLength();
+                        int minLength = annotation.minLength();
+
+                        if(annotation.from().length == 0 && !isArray(field)) {
+                            field.set(instance, StringGenerator.generate(length, minLength, maxLength));
+                        } else if (annotation.from().length == 0 && isArray(field)){
+                            field.set(instance, StringGenerator.generate(length, minLength, maxLength, count));
+                        } else if (isArray(field)){
+                            List <String> values = new ArrayList<>();
+
+                            for(int i = 0; i<count; i++)
+                                values.add(from[rnd.nextInt(0, from.length)]);
+
+                            field.set(instance, values);
+                        } else {
+                            field.set(instance, from[rnd.nextInt(0, from.length)]);
+                        }
+                    }
                 }
 
                 currentClass = currentClass.getSuperclass();
             }
-        } catch (InstantiationException | IllegalAccessException e) {
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        return instance;
+    }
+    private T processDoubleFields(T instance) throws InvalidTypeForAnnotationException {
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
+        try {
+            Class currentClass = this._type;
+
+            while(currentClass.getSuperclass() != null){
+                for(Field field: currentClass.getDeclaredFields()){
+                    field.setAccessible(true);
+
+                    if(!field.isAnnotationPresent(RandomDouble.class)){
+                        continue;
+                    }
+
+                    if(!isTypeOrArrayOfType(field, Double.class) && !isType(field, double.class)){
+                        throw new InvalidTypeForAnnotationException(field.getType(), RandomDouble.class);
+                    } else {
+                        RandomDouble annotation = field.getAnnotation(RandomDouble.class);
+
+                        int count = annotation.count() >= 0 ? annotation.count() : rnd.nextInt(annotation.minCount(), annotation.maxCount()+1);
+                        double [] from = annotation.from();
+                        double max = annotation.max();
+                        double min = annotation.min();
+
+                        if(annotation.from().length == 0 && !isArray(field)) {
+                            field.set(instance, DoubleGenerator.generate(min, max));
+                        } else if (annotation.from().length == 0 && isArray(field)){
+                            field.set(instance, DoubleGenerator.generate(min, max, count));
+                        } else if (isArray(field)){
+                            List <Double> values = new ArrayList<>();
+
+                            for(int i = 0; i<count; i++)
+                                values.add(from[rnd.nextInt(0, from.length)]);
+
+                            field.set(instance, values);
+                        } else {
+                            field.set(instance, from[rnd.nextInt(0, from.length)]);
+                        }
+                    }
+                }
+
+                currentClass = currentClass.getSuperclass();
+            }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        return instance;
+    }
+    private T processIntFields(T instance) throws InvalidTypeForAnnotationException {
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
+        try {
+            Class currentClass = this._type;
+
+            while(currentClass.getSuperclass() != null){
+                for(Field field: currentClass.getDeclaredFields()){
+                    field.setAccessible(true);
+
+                    if(!field.isAnnotationPresent(RandomInt.class)){
+                        continue;
+                    }
+
+                    if(!isTypeOrArrayOfType(field, Integer.class) && !isType(field, int.class)){
+                        throw new InvalidTypeForAnnotationException(field.getType(), RandomInt.class);
+                    } else {
+                        RandomInt annotation = field.getAnnotation(RandomInt.class);
+
+                        int count = annotation.count() >= 0 ? annotation.count() : rnd.nextInt(annotation.minCount(), annotation.maxCount()+1);
+                        int [] from = annotation.from();
+                        int max = annotation.max();
+                        int min = annotation.min();
+
+                        if(annotation.from().length == 0 && !isArray(field)) {
+                            field.set(instance, IntegerGenerator.generate(min, max));
+                        } else if (annotation.from().length == 0 && isArray(field)){
+                            field.set(instance, IntegerGenerator.generate(min, max, count));
+                        } else if (isArray(field)){
+                            List <Integer> values = new ArrayList<>();
+
+                            for(int i = 0; i<count; i++)
+                                values.add(from[rnd.nextInt(0, from.length)]);
+
+                            field.set(instance, values);
+                        } else {
+                            field.set(instance, from[rnd.nextInt(0, from.length)]);
+                        }
+                    }
+                }
+
+                currentClass = currentClass.getSuperclass();
+            }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        return instance;
+    }
+    private T processFloatFields(T instance) throws InvalidTypeForAnnotationException {
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
+        try {
+            Class currentClass = this._type;
+
+            while(currentClass.getSuperclass() != null){
+                for(Field field: currentClass.getDeclaredFields()){
+                    field.setAccessible(true);
+
+                    if(!field.isAnnotationPresent(RandomFloat.class)){
+                        continue;
+                    }
+
+                    if(!isTypeOrArrayOfType(field, Float.class) && !isType(field, float.class)){
+                        throw new InvalidTypeForAnnotationException(field.getType(), RandomFloat.class);
+                    } else {
+                        RandomFloat annotation = field.getAnnotation(RandomFloat.class);
+
+                        int count = annotation.count() >= 0 ? annotation.count() : rnd.nextInt(annotation.minCount(), annotation.maxCount()+1);
+                        float [] from = annotation.from();
+                        float max = annotation.max();
+                        float min = annotation.min();
+
+                        if(annotation.from().length == 0 && !isArray(field)) {
+                            field.set(instance, FloatGenerator.generate(min, max));
+                        } else if (annotation.from().length == 0 && isArray(field)){
+                            field.set(instance, FloatGenerator.generate(min, max, count));
+                        } else if (isArray(field)){
+                            List <Float> values = new ArrayList<>();
+
+                            for(int i = 0; i<count; i++)
+                                values.add(from[rnd.nextInt(0, from.length)]);
+
+                            field.set(instance, values);
+                        } else {
+                            field.set(instance, from[rnd.nextInt(0, from.length)]);
+                        }
+                    }
+                }
+
+                currentClass = currentClass.getSuperclass();
+            }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        return instance;
+    }
+    private T processLongFields(T instance) throws InvalidTypeForAnnotationException {
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
+        try {
+            Class currentClass = this._type;
+
+            while(currentClass.getSuperclass() != null){
+                for(Field field: currentClass.getDeclaredFields()){
+                    field.setAccessible(true);
+
+                    if(!field.isAnnotationPresent(RandomLong.class)){
+                        continue;
+                    }
+
+                    if((!isTypeOrArrayOfType(field, Long.class)) && !isType(field, long.class)){
+                        throw new InvalidTypeForAnnotationException(field.getType(), RandomLong.class);
+                    } else {
+                        RandomLong annotation = field.getAnnotation(RandomLong.class);
+
+                        int count = annotation.count() >= 0 ? annotation.count() : rnd.nextInt(annotation.minCount(), annotation.maxCount()+1);
+                        long [] from = annotation.from();
+                        long max = annotation.max();
+                        long min = annotation.min();
+
+                        if(annotation.from().length == 0 && !isArray(field)) {
+                            field.set(instance, LongGenerator.generate(min, max));
+                        } else if (annotation.from().length == 0 && isArray(field)){
+                            field.set(instance, LongGenerator.generate(min, max, count));
+                        } else if (isArray(field)){
+                            List <Long> values = new ArrayList<>();
+
+                            for(int i = 0; i<count; i++)
+                                values.add(from[rnd.nextInt(0, from.length)]);
+
+                            field.set(instance, values);
+                        } else {
+                            field.set(instance, from[rnd.nextInt(0, from.length)]);
+                        }
+                    }
+                }
+
+                currentClass = currentClass.getSuperclass();
+            }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        return instance;
+    }
+    private T processBooleanFields(T instance) throws InvalidTypeForAnnotationException {
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
+        try {
+            Class currentClass = this._type;
+
+            while(currentClass.getSuperclass() != null){
+                for(Field field: currentClass.getDeclaredFields()){
+                    field.setAccessible(true);
+
+                    if(!field.isAnnotationPresent(RandomBoolean.class)){
+                        continue;
+                    }
+
+                    if((!isTypeOrArrayOfType(field, Boolean.class)) && !isType(field, boolean.class)){
+                        throw new InvalidTypeForAnnotationException(field.getType(), RandomBoolean.class);
+                    } else {
+                        RandomBoolean annotation = field.getAnnotation(RandomBoolean.class);
+
+                        int count = annotation.count() >= 0 ? annotation.count() : rnd.nextInt(annotation.minCount(), annotation.maxCount()+1);
+
+                        if (isArray(field)){
+                            field.set(instance, BooleanGenerator.generate(count));
+                        } else {
+                            field.set(instance, BooleanGenerator.generate());
+                        }
+                    }
+                }
+
+                currentClass = currentClass.getSuperclass();
+            }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        return instance;
+    }
+    private T processObjectFields(T instance) throws InvalidTypeForAnnotationException{
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
+        try {
+            Class currentClass = this._type;
+
+            while(currentClass.getSuperclass() != null){
+                for(Field field: currentClass.getDeclaredFields()){
+                    field.setAccessible(true);
+
+                    if(!field.isAnnotationPresent(RandomObject.class)){
+                        continue;
+                    }
+
+                    RandomObject annotation = field.getAnnotation(RandomObject.class);
+
+                    int count = annotation.count() >= 0 ? annotation.count() : rnd.nextInt(annotation.minCount(), annotation.maxCount()+1);
+
+                    if (isArray(field)){
+                        field.set(instance, RandomGenerator.forType(getListType(field)).generate(count));
+                    } else {
+                        field.set(instance, RandomGenerator.forType(field.getType()).generateOne());
+                    }
+                }
+
+                currentClass = currentClass.getSuperclass();
+            }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        return instance;
+    }
+
+    private T random(){
+        T instance = null;
+        try {
+            instance = _type.newInstance();
+
+            instance = this.processAnnotations(instance);
+
+        } catch (InstantiationException | IllegalAccessException | InvalidTypeForAnnotationException e) {
             e.printStackTrace();
         }
 
@@ -120,12 +377,10 @@ public class RandomGenerator<T> {
 
         return objects;
     }
-
-    public static List generate(int count, Class type){
-        List objects = new ArrayList<>();
-
-        RandomGenerator generator = new RandomGenerator(type);
-
-        return generator.generate(count);
+    public T generateOne(){
+        return this.generate(1).get(0);
+    }
+    public static RandomGenerator forType(Class type){
+        return new RandomGenerator(type);
     }
 }
