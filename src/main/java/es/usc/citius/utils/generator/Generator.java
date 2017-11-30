@@ -13,7 +13,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class RandomGenerator<T> {
+public class Generator<T> {
     private Class<T> _type;
 
     private BooleanGenerator _defaultBooleanGenerator = new BasicBooleanGenerator();
@@ -23,8 +23,9 @@ public class RandomGenerator<T> {
     private LongGenerator _defaultLongGenerator = new BasicLongGenerator();
     private StringGenerator _defaultStringGenerator = new BasicStringGenerator();
 
-    private RandomGenerator(Class<T> type){
+    Generator<T> setType(Class<T> type){
         this._type = type;
+        return this;
     }
 
     private boolean isTypeOrArrayOfType(Field field, Class type) throws ClassNotFoundException {
@@ -345,7 +346,7 @@ public class RandomGenerator<T> {
                 int count = annotation.count() >= 0 ? annotation.count() : rnd.nextInt(annotation.minCount(), annotation.maxCount()+1);
 
                 if (isArray(field)){
-                    RandomGenerator generator = RandomGenerator
+                    Generator generator = Generator
                             .forType(getListType(field))
                             .withDefaultBooleanGenerator(_defaultBooleanGenerator.getClass())
                             .withDefaultDoubleGenerator(_defaultDoubleGenerator.getClass())
@@ -356,7 +357,7 @@ public class RandomGenerator<T> {
 
                     field.set(instance, generator.generate(count));
                 } else {
-                    RandomGenerator generator = RandomGenerator
+                    Generator generator = Generator
                             .forType(field.getType())
                             .withDefaultBooleanGenerator(_defaultBooleanGenerator.getClass())
                             .withDefaultDoubleGenerator(_defaultDoubleGenerator.getClass())
@@ -376,40 +377,40 @@ public class RandomGenerator<T> {
         return instance;
     }
 
-    private Object createGeneratorForType(Class<?> implementation, Class<?> type) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
+    private static Object createGeneratorForType(Class<?> implementation, Class<?> type) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
         if(!type.isAssignableFrom(implementation)){
             throw new InvalidGeneratorException(type, implementation);
         }
 
         return implementation.newInstance();
     }
-
-    public RandomGenerator withDefaultStringGenerator(Class c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
+    public Generator withDefaultStringGenerator(Class<?> c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
         this._defaultStringGenerator = (StringGenerator) createGeneratorForType(c, StringGenerator.class);
         return this;
     }
-    public RandomGenerator withDefaultDoubleGenerator(Class c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
+    public Generator withDefaultDoubleGenerator(Class<?> c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
         this._defaultDoubleGenerator = (DoubleGenerator) createGeneratorForType(c, DoubleGenerator.class);
         return this;
     }
-    public RandomGenerator withDefaultIntegerGenerator(Class c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
+    public Generator withDefaultIntegerGenerator(Class<?> c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
         this._defaultIntegerGenerator = (IntegerGenerator) createGeneratorForType(c, IntegerGenerator.class);
         return this;
     }
-    public RandomGenerator withDefaultFloatGenerator(Class c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
+    public Generator withDefaultFloatGenerator(Class<?> c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
         this._defaultFloatGenerator = (FloatGenerator) createGeneratorForType(c, FloatGenerator.class);
         return this;
     }
-    public RandomGenerator withDefaultLongGenerator(Class c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
+    public Generator withDefaultLongGenerator(Class<?> c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
         this._defaultLongGenerator = (LongGenerator) createGeneratorForType(c, LongGenerator.class);
         return this;
     }
-    public RandomGenerator withDefaultBooleanGenerator(Class c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
+    public Generator withDefaultBooleanGenerator(Class<?> c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
         this._defaultBooleanGenerator = (BooleanGenerator) createGeneratorForType(c, BooleanGenerator.class);
         return this;
     }
-    public static RandomGenerator<?> forType(Class<?> type){
-        return new RandomGenerator<>(type);
+
+    public static Generator<?> forType(Class type) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
+        return ((Generator<?>)createGeneratorForType(Generator.class, Generator.class)).setType(type);
     }
 
     private T random(){
@@ -431,5 +432,8 @@ public class RandomGenerator<T> {
     }
     public List<T> generate(int count){
         return Stream.generate(this::generate).limit(count).collect(Collectors.toList());
+    }
+    public Stream<T> stream(){
+        return Stream.generate(this::generate);
     }
 }
