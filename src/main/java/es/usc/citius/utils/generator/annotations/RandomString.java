@@ -16,6 +16,6 @@ public @interface RandomString {
     int minCount() default 3;
     int maxCount() default 5;
     int length() default -1;
-    int maxLength () default 5;
-    int minLength () default 15;
+    int maxLength () default 15;
+    int minLength () default 5;
 }

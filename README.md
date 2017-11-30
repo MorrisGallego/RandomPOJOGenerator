@@ -34,3 +34,13 @@ Using custom generators you can adapt the generator to your needs, for example t
 
 ##Defining custom generators globally
 If you want to specify a custom generator globally for all the fields with a concrete type, you can do it by using the `.withDefaultXXXXXGenerator()` method from a `Generator` instance.
+
+##Generating random objects
+The class `es.usc.citius.utils.generator.Generator` implements the generation logic. 
+
+If you need it, you can generate a single object, a list of objects or a stream for the configured type.
+
+##Generating multiple types at once
+The included class `es.usc.citius.utils.generator.MultiTypeGenerator` allows you to generate objects from multiple types in a single entry point. 
+
+Apart from configuring it automatically (using the method `.forTypes(Class ... types)`) you can add custom configured generators manually.

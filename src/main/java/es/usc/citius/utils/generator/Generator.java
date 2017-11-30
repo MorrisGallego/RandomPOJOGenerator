@@ -431,7 +431,7 @@ public class Generator<T> {
         return this.random();
     }
     public List<T> generate(int count){
-        return Stream.generate(this::generate).limit(count).collect(Collectors.toList());
+        return this.stream().limit(count).collect(Collectors.toList());
     }
     public Stream<T> stream(){
         return Stream.generate(this::generate);
