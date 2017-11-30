@@ -12,35 +12,35 @@ First of all, you need to annotate your POJO fields with one of the annotations 
 
 Then, you can call `es.usc.citius.utils.generator.Generator.forType(YourPojo.class).generate(10)` and you will get a list with 10 instances of `YourPojo`, with the annotated fields populated properly.
 
-##Available Annotations
+## Available Annotations
 All annotations support atomic fields and lists. If your field is a list of objects, you can specify the exact length or a maximum and minimum length for it.
 
 Also, you can specify a custom generator in the annotation for any field. 
 
-###`@RandomBoolean()`
-###`@RandomDouble()`
-###`@RandomFloat()`
-###`@RandomInt()`
-###`@RandomLong()`
-###`@RandomString()`
-###`@RandomObject()`
+### `@RandomBoolean()`
+### `@RandomDouble()`
+### `@RandomFloat()`
+### `@RandomInt()`
+### `@RandomLong()`
+### `@RandomString()`
+### `@RandomObject()`
 
-##Creating your custom generators
+## Creating your custom generators
 If you want to provide your custom generator for any of the annotations, you just have to implement the corresponding interface from `es.usc.citius.utils.generator.generators`. 
 
 Currently, you can specify custom generators for `Strings`, `Booleans`, `Doubles`, `Floats`, `Integers` and `Longs`.
 
 Using custom generators you can adapt the generator to your needs, for example to generate custom Strings with email format, or realistic human names.
 
-##Defining custom generators globally
+## Defining custom generators globally
 If you want to specify a custom generator globally for all the fields with a concrete type, you can do it by using the `.withDefaultXXXXXGenerator()` method from a `Generator` instance.
 
-##Generating random objects
+## Generating random objects
 The class `es.usc.citius.utils.generator.Generator` implements the generation logic. 
 
 If you need it, you can generate a single object, a list of objects or a stream for the configured type.
 
-##Generating multiple types at once
+## Generating multiple types at once
 The included class `es.usc.citius.utils.generator.MultiTypeGenerator` allows you to generate objects from multiple types in a single entry point. 
 
 Apart from configuring it automatically (using the method `.forTypes(Class ... types)`) you can add custom configured generators manually.
