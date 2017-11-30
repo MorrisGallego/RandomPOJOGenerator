@@ -1,12 +1,13 @@
-package es.usc.citius.utils.generator.model;
+package es.usc.citius.utils.testing.model;
 
 import es.usc.citius.utils.generator.annotations.RandomInt;
 import es.usc.citius.utils.generator.annotations.RandomString;
+import es.usc.citius.utils.testing.generator.CustomIntegerGenerator;
 
 public class Address {
     @RandomString()
     private String street;
-    @RandomInt(generator = es.usc.citius.utils.generator.generator.CustomIntegerGenerator.class)
+    @RandomInt(generator = CustomIntegerGenerator.class)
     private int number;
     @RandomInt(min = 10, max = 100)
     private int rating;

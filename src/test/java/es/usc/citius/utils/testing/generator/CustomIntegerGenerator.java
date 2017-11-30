@@ -1,4 +1,4 @@
-package es.usc.citius.utils.generator.generator;
+package es.usc.citius.utils.testing.generator;
 
 import es.usc.citius.utils.generator.generators.IntegerGenerator;
 

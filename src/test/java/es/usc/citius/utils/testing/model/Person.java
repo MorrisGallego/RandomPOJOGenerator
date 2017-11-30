@@ -1,4 +1,4 @@
-package es.usc.citius.utils.generator.model;
+package es.usc.citius.utils.testing.model;
 
 import es.usc.citius.utils.generator.annotations.RandomObject;
 import es.usc.citius.utils.generator.annotations.RandomString;
