@@ -4,13 +4,15 @@ import es.usc.citius.utils.generator.annotations.RandomInt;
 import es.usc.citius.utils.generator.annotations.RandomString;
 
 public class Address {
-    @RandomString(from = {"Calle 1", "Calle 2", "Calle 3", "Calle 4", "Calle 5", "Calle 6", "Calle 7", "Calle 8", "Calle 9"})
+    @RandomString()
     private String street;
-    @RandomInt(min = 0, max = 50)
+    @RandomInt(generator = es.usc.citius.utils.generator.generator.CustomIntegerGenerator.class)
     private int number;
-    @RandomString(from = {"A", "B", "C", "D", "E"})
+    @RandomInt(min = 10, max = 100)
+    private int rating;
+    @RandomString()
     private String door;
-    @RandomString(from = {"17075", "15701", "36600", "28080"})
+    @RandomString()
     private String postalCode;
 
     public Address(){}
@@ -45,7 +47,23 @@ public class Address {
     public void setPostalCode(String postalCode) {
         this.postalCode = postalCode;
     }
+    public int getRating() {
+        return rating;
+    }
+    public void setRating(int rating) {
+        this.rating = rating;
+    }
 
+    @Override
+    public String toString() {
+        return "Address{" +
+                "street='" + street + '\'' +
+                ", number=" + number +
+                ", rating=" + rating +
+                ", door='" + door + '\'' +
+                ", postalCode='" + postalCode + '\'' +
+                '}';
+    }
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -54,6 +72,7 @@ public class Address {
         Address address = (Address) o;
 
         if (number != address.number) return false;
+        if (rating != address.rating) return false;
         if (street != null ? !street.equals(address.street) : address.street != null) return false;
         if (door != null ? !door.equals(address.door) : address.door != null) return false;
         return postalCode != null ? postalCode.equals(address.postalCode) : address.postalCode == null;
@@ -62,18 +81,9 @@ public class Address {
     public int hashCode() {
         int result = street != null ? street.hashCode() : 0;
         result = 31 * result + number;
+        result = 31 * result + rating;
         result = 31 * result + (door != null ? door.hashCode() : 0);
         result = 31 * result + (postalCode != null ? postalCode.hashCode() : 0);
         return result;
     }
-    @Override
-    public String toString() {
-        return "Address{" +
-                "street='" + street + '\'' +
-                ", number=" + number +
-                ", door='" + door + '\'' +
-                ", postalCode='" + postalCode + '\'' +
-                "}\n";
-    }
-
 }
