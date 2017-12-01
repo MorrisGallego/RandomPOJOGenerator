@@ -20,15 +20,18 @@ Also, you can specify a custom generator in the annotation for any field.
 ### `@RandomBoolean()`
 ### `@RandomDouble()`
 ### `@RandomFloat()`
-### `@RandomInt()`
+### `@RandomInteger()`
 ### `@RandomLong()`
 ### `@RandomString()`
+### `@RandomShort()`
+### `@RandomCharacter()`
+### `@RandomByte()`
 ### `@RandomObject()`
 
 ## Creating your custom generators
 If you want to provide your custom generator for any of the annotations, you just have to implement the corresponding interface from `es.usc.citius.utils.generator.generators`. 
 
-Currently, you can specify custom generators for `Strings`, `Booleans`, `Doubles`, `Floats`, `Integers` and `Longs`.
+Currently, you can specify custom generators for `Strings`, `Booleans`, `Doubles`, `Floats`, `Integers`, `Characters`, `Bytes`, `Shorts` and `Longs`.
 
 Using custom generators you can adapt the generator to your needs, for example to generate custom Strings with email format, or realistic human names.
 
