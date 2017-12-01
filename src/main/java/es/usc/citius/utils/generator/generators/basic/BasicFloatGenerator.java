@@ -17,4 +17,12 @@ public class BasicFloatGenerator implements FloatGenerator{
     public List<Float> generate(float min, float max, int count){
         return Stream.generate(() -> generate(min, max)).limit(count).collect(Collectors.toList());
     }
+
+    public float[] generateArray(float min, float max, int count){
+        float[] array = new float[count];
+        for(int i=0; i<count; i++)
+            array[i] =  generate(min, max);
+
+        return array;
+    }
 }

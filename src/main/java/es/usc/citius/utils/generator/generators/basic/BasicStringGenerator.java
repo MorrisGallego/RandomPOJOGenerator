@@ -9,22 +9,12 @@ import java.util.stream.Stream;
 
 public class BasicStringGenerator implements StringGenerator{
     public String generate(int length, int minLength, int maxLength){
+        BasicCharacterGenerator generator = new BasicCharacterGenerator();
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
-        String characters = "abcdefghijklmnopqrstuvwxyz";
-        String numbers = "1234567890";
-        String symbols = "+-*_{}[]!|@·#$~%&¬/()=?¿";
-
-        char[] dict = characters.concat(characters.toUpperCase()).concat(numbers).concat(symbols).toCharArray();
-
         StringBuilder sb = new StringBuilder();
 
-        if(length < 0)
-            length = rnd.nextInt(minLength, maxLength);
-
-        length = Math.max(length, 0);
-
-        for (int i = 0; i < length; i++)
-            sb.append(dict[rnd.nextInt(0, dict.length)]);
+        length = length < 0 ? Math.max(rnd.nextInt(minLength, maxLength), 0) : Math.max(length, 0);
+        Stream.generate(generator::generate).limit(length).forEach(sb::append);
 
         return sb.toString();
     }

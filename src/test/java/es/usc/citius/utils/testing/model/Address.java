@@ -1,16 +1,16 @@
 package es.usc.citius.utils.testing.model;
 
-import es.usc.citius.utils.generator.annotations.RandomInt;
+import es.usc.citius.utils.generator.annotations.RandomInteger;
 import es.usc.citius.utils.generator.annotations.RandomString;
 import es.usc.citius.utils.testing.generator.CustomIntegerGenerator;
 
 public class Address {
     @RandomString()
     private String street;
-    @RandomInt(generator = CustomIntegerGenerator.class)
+    @RandomInteger(generator = CustomIntegerGenerator.class)
     private int number;
-    @RandomInt(min = 10, max = 100)
-    private int rating;
+    @RandomInteger(min = 10, max = 100)
+    private int[] rating;
     @RandomString()
     private String door;
     @RandomString()
@@ -48,10 +48,10 @@ public class Address {
     public void setPostalCode(String postalCode) {
         this.postalCode = postalCode;
     }
-    public int getRating() {
+    public int[] getRating() {
         return rating;
     }
-    public void setRating(int rating) {
+    public void setRating(int[] rating) {
         this.rating = rating;
     }
 
@@ -82,7 +82,7 @@ public class Address {
     public int hashCode() {
         int result = street != null ? street.hashCode() : 0;
         result = 31 * result + number;
-        result = 31 * result + rating;
+        result = 31 * result + rating[0];
         result = 31 * result + (door != null ? door.hashCode() : 0);
         result = 31 * result + (postalCode != null ? postalCode.hashCode() : 0);
         return result;

@@ -12,16 +12,6 @@ public class MultiTypeGenerator {
     private List<Generator> generators = new ArrayList<>();
     private MultiTypeGenerator(){}
 
-    public static MultiTypeGenerator create(){ return new MultiTypeGenerator(); }
-    public static MultiTypeGenerator forTypes(Class ... types){
-        try {
-            return new MultiTypeGenerator().addDefaultGeneratorsForTypes(types);
-        } catch (InvalidGeneratorException | IllegalAccessException | InstantiationException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     private MultiTypeGenerator addDefaultGeneratorsForTypes(Class ... types) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
         MultiTypeGenerator generator = new MultiTypeGenerator();
 
@@ -30,11 +20,6 @@ public class MultiTypeGenerator {
         }
 
         return generator;
-    }
-
-    public MultiTypeGenerator addGenerator(Generator generator){
-        generators.add(generator);
-        return this;
     }
 
     public MultiTypeGenerator withDefaultStringGenerator(Class<?> c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
@@ -65,6 +50,35 @@ public class MultiTypeGenerator {
     public MultiTypeGenerator withDefaultBooleanGenerator(Class<?> c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
         for(Generator generator: generators)
             generator.withDefaultBooleanGenerator(c);
+        return this;
+    }
+    public MultiTypeGenerator withDefaultShortGenerator(Class<?> c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
+        for(Generator generator: generators)
+            generator.withDefaultShortGenerator(c);
+        return this;
+    }
+    public MultiTypeGenerator withDefaultCharacterGenerator(Class<?> c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
+        for(Generator generator: generators)
+            generator.withDefaultCharacterGenerator(c);
+        return this;
+    }
+    public MultiTypeGenerator withDefaultByteGenerator(Class<?> c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
+        for(Generator generator: generators)
+            generator.withDefaultByteGenerator(c);
+        return this;
+    }
+
+    public static MultiTypeGenerator create(){ return new MultiTypeGenerator(); }
+    public static MultiTypeGenerator forTypes(Class ... types){
+        try {
+            return MultiTypeGenerator.create().addDefaultGeneratorsForTypes(types);
+        } catch (InvalidGeneratorException | IllegalAccessException | InstantiationException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    public MultiTypeGenerator addGenerator(Generator generator){
+        generators.add(generator);
         return this;
     }
 

@@ -16,4 +16,12 @@ public class BasicBooleanGenerator implements BooleanGenerator{
     public List<Boolean> generate(int count){
         return Stream.generate(this::generate).limit(count).collect(Collectors.toList());
     }
+
+    public boolean[] generateArray(int count){
+        boolean[] array = new boolean[count];
+        for(int i=0; i<count; i++)
+            array[i] =  generate();
+
+        return array;
+    }
 }

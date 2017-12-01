@@ -16,4 +16,9 @@ public class CustomIntegerGenerator implements IntegerGenerator{
     public List<Integer> generate(int min, int max, int count) {
         return Stream.generate(() -> -1).collect(Collectors.toList());
     }
+
+    @Override
+    public int[] generateArray(int min, int max, int count) {
+        return new int[0];
+    }
 }

@@ -16,4 +16,12 @@ public class BasicDoubleGenerator implements DoubleGenerator{
     public List<Double> generate(double min, double max, int count){
         return Stream.generate(() -> generate(min, max)).limit(count).collect(Collectors.toList());
     }
+
+    public double[] generateArray(double min, double max, int count){
+        double[] array = new double[count];
+        for(int i=0; i<count; i++)
+            array[i] =  generate(min, max);
+
+        return array;
+    }
 }

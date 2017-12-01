@@ -17,4 +17,12 @@ public class BasicLongGenerator implements LongGenerator{
     public List<Long> generate(long min, long max, int count){
         return Stream.generate(() -> generate(min, max)).limit(count).collect(Collectors.toList());
     }
+
+    public long[] generateArray(long min, long max, int count){
+        long[] array = new long[count];
+        for(int i=0; i<count; i++)
+            array[i] =  generate(min, max);
+
+        return array;
+    }
 }

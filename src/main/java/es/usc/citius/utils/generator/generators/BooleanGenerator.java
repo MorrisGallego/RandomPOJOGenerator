@@ -5,4 +5,5 @@ import java.util.List;
 public interface BooleanGenerator {
     boolean generate();
     List<Boolean> generate(int count);
+    boolean[] generateArray(int count);
 }

@@ -22,26 +22,38 @@ public class Generator<T> {
     private IntegerGenerator _defaultIntegerGenerator = new BasicIntegerGenerator();
     private LongGenerator _defaultLongGenerator = new BasicLongGenerator();
     private StringGenerator _defaultStringGenerator = new BasicStringGenerator();
+    private ShortGenerator _defaultShortGenerator = new BasicShortGenerator();
+    private CharacterGenerator _defaultCharacterGenerator = new BasicCharacterGenerator();
+    private ByteGenerator _defaultByteGenerator = new BasicByteGenerator();
 
     Generator<T> setType(Class<T> type){
         this._type = type;
         return this;
     }
 
-    private boolean isTypeOrArrayOfType(Field field, Class type) throws ClassNotFoundException {
-        return isType(field, type) || isArrayOfType(field, type);
+    private boolean isTypeOrArrayOfTypeOrListOfType(Field field, Class type) throws ClassNotFoundException {
+        return isType(field, type) || isListOfType(field, type) || isArrayOfType(field, type);
     }
-    private boolean isArrayOfType(Field field, Class type) throws ClassNotFoundException {
-        return isArray(field) && getListType(field).isAssignableFrom(type);
-    }
-    private Class<?> getListType(Field field) throws ClassNotFoundException {
-        return Class.forName(((ParameterizedType)field.getGenericType()).getActualTypeArguments()[0].getTypeName());
+    private boolean isListOfType(Field field, Class type) throws ClassNotFoundException {
+        return isList(field) && getListType(field).isAssignableFrom(type);
     }
     private boolean isType(Field field, Class<?> type){
         return type.isAssignableFrom(field.getType());
     }
-    private boolean isArray(Field field){
+    private boolean isList(Field field){
         return isType(field, List.class);
+    }
+    private boolean isArray(Field field){
+        return field.getType().isArray();
+    }
+    private boolean isArrayOfType(Field field, Class<?> type){
+        return field.getType().isArray() && type.isAssignableFrom(field.getType().getComponentType());
+    }
+    private Class<?> getListType(Field field) throws ClassNotFoundException {
+        return Class.forName(((ParameterizedType)field.getGenericType()).getActualTypeArguments()[0].getTypeName());
+    }
+    private Class<?> getArrayType(Field field){
+        return field.getType().getComponentType();
     }
 
     private T processAnnotations(T instance) throws InvalidTypeForAnnotationException, InvalidGeneratorException, IllegalAccessException, InstantiationException, ClassNotFoundException {
@@ -50,8 +62,11 @@ public class Generator<T> {
         instance = processIntegerFields(instance);
         instance = processFloatFields(instance);
         instance = processLongFields(instance);
+        instance = processShortFields(instance);
         instance = processBooleanFields(instance);
         instance = processObjectFields(instance);
+        instance = processCharacterFields(instance);
+        instance = processByteFields(instance);
 
         return instance;
     }
@@ -69,7 +84,7 @@ public class Generator<T> {
                     continue;
                 }
 
-                if(!isTypeOrArrayOfType(field, String.class)){
+                if(!isTypeOrArrayOfTypeOrListOfType(field, String.class)){
                     throw new InvalidTypeForAnnotationException(field.getType(), RandomString.class);
                 } else {
                     RandomString annotation = field.getAnnotation(RandomString.class);
@@ -84,13 +99,18 @@ public class Generator<T> {
                     int maxLength = annotation.maxLength();
                     int minLength = annotation.minLength();
 
-                    if(annotation.from().length == 0 && !isArray(field)) {
+                    if(annotation.from().length == 0 && !isList(field) && !isArray(field)) {
                         field.set(instance, generator.generate(length, minLength, maxLength));
-                    } else if (annotation.from().length == 0 && isArray(field)){
+                    } else if (annotation.from().length == 0 && isList(field)){
                         field.set(instance, generator.generate(length, minLength, maxLength, count));
-                    } else if (isArray(field)){
+                    } else if (annotation.from().length == 0 && isArray(field)){
+                        field.set(instance, generator.generate(length, minLength, maxLength, count).toArray());
+                    } else if (isList(field)){
                         List <String> values = Stream.generate(() -> from[rnd.nextInt(0, from.length)]).limit(count).collect(Collectors.toList());
                         field.set(instance, values);
+                    } else if (isArray(field)){
+                        List <String> values = Stream.generate(() -> from[rnd.nextInt(0, from.length)]).limit(count).collect(Collectors.toList());
+                        field.set(instance, values.toArray());
                     } else {
                         field.set(instance, from[rnd.nextInt(0, from.length)]);
                     }
@@ -116,7 +136,7 @@ public class Generator<T> {
                     continue;
                 }
 
-                if(!isTypeOrArrayOfType(field, Double.class) && !isType(field, double.class)){
+                if(!isTypeOrArrayOfTypeOrListOfType(field, Double.class) && !isTypeOrArrayOfTypeOrListOfType(field, double.class)){
                     throw new InvalidTypeForAnnotationException(field.getType(), RandomDouble.class);
                 } else {
                     RandomDouble annotation = field.getAnnotation(RandomDouble.class);
@@ -130,12 +150,21 @@ public class Generator<T> {
                     double max = annotation.max();
                     double min = annotation.min();
 
-                    if(annotation.from().length == 0 && !isArray(field)) {
+                    if(annotation.from().length == 0 && !isList(field) && !isArray(field)) {
                         field.set(instance, generator.generate(min, max));
-                    } else if (annotation.from().length == 0 && isArray(field)){
+                    } else if (annotation.from().length == 0 && isList(field)){
                         field.set(instance, generator.generate(min, max, count));
-                    } else if (isArray(field)){
+                    } else if (annotation.from().length == 0 && isArray(field)){
+                        field.set(instance, generator.generateArray(min, max, count));
+                    } else if (isList(field)){
                         List <Double> values = Stream.generate(() -> from[rnd.nextInt(0, from.length)]).limit(count).collect(Collectors.toList());
+                        field.set(instance, values);
+                    } else if (isArray(field)){
+                        double[] values = new double[count];
+
+                        for(int i=0; i<count; i++)
+                            values[i] = from[rnd.nextInt(0, from.length)];
+
                         field.set(instance, values);
                     } else {
                         field.set(instance, from[rnd.nextInt(0, from.length)]);
@@ -159,14 +188,14 @@ public class Generator<T> {
 
                 field.setAccessible(true);
 
-                if(!field.isAnnotationPresent(RandomInt.class)){
+                if(!field.isAnnotationPresent(RandomInteger.class)){
                     continue;
                 }
 
-                if(!isTypeOrArrayOfType(field, Integer.class) && !isType(field, int.class)){
-                    throw new InvalidTypeForAnnotationException(field.getType(), RandomInt.class);
+                if(!isTypeOrArrayOfTypeOrListOfType(field, Integer.class) && !isTypeOrArrayOfTypeOrListOfType(field, int.class)){
+                    throw new InvalidTypeForAnnotationException(field.getType(), RandomInteger.class);
                 } else {
-                    RandomInt annotation = field.getAnnotation(RandomInt.class);
+                    RandomInteger annotation = field.getAnnotation(RandomInteger.class);
 
                     if(!annotation.generator().getCanonicalName().equals(IntegerGenerator.class.getCanonicalName())){
                         generator = (IntegerGenerator) createGeneratorForType(annotation.generator(), IntegerGenerator.class);
@@ -177,12 +206,21 @@ public class Generator<T> {
                     int max = annotation.max();
                     int min = annotation.min();
 
-                    if(annotation.from().length == 0 && !isArray(field)) {
+                    if(annotation.from().length == 0 && !isList(field) && !isArray(field)) {
                         field.set(instance, generator.generate(min, max));
-                    } else if (annotation.from().length == 0 && isArray(field)){
+                    } else if (annotation.from().length == 0 && isList(field)){
                         field.set(instance, generator.generate(min, max, count));
-                    } else if (isArray(field)){
+                    } else if (annotation.from().length == 0 && isArray(field)){
+                        field.set(instance, generator.generateArray(min, max, count));
+                    } else if (isList(field)){
                         List <Integer> values = Stream.generate(() -> from[rnd.nextInt(0, from.length)]).limit(count).collect(Collectors.toList());
+                        field.set(instance, values);
+                    } else if (isArray(field)){
+                        int[] values = new int[count];
+
+                        for(int i=0; i<count; i++)
+                            values[i] = from[rnd.nextInt(0, from.length)];
+
                         field.set(instance, values);
                     } else {
                         field.set(instance, from[rnd.nextInt(0, from.length)]);
@@ -210,7 +248,7 @@ public class Generator<T> {
                     continue;
                 }
 
-                if(!isTypeOrArrayOfType(field, Float.class) && !isType(field, float.class)){
+                if(!isTypeOrArrayOfTypeOrListOfType(field, Float.class) && !isTypeOrArrayOfTypeOrListOfType(field, float.class)){
                     throw new InvalidTypeForAnnotationException(field.getType(), RandomFloat.class);
                 } else {
                     RandomFloat annotation = field.getAnnotation(RandomFloat.class);
@@ -224,12 +262,21 @@ public class Generator<T> {
                     float max = annotation.max();
                     float min = annotation.min();
 
-                    if(annotation.from().length == 0 && !isArray(field)) {
+                    if(annotation.from().length == 0 && !isList(field) && !isArray(field)) {
                         field.set(instance, generator.generate(min, max));
-                    } else if (annotation.from().length == 0 && isArray(field)){
+                    } else if (annotation.from().length == 0 && isList(field)){
                         field.set(instance, generator.generate(min, max, count));
-                    } else if (isArray(field)){
+                    } else if (annotation.from().length == 0 && isArray(field)){
+                        field.set(instance, generator.generateArray(min, max, count));
+                    } else if (isList(field)){
                         List <Float> values = Stream.generate(() -> from[rnd.nextInt(0, from.length)]).limit(count).collect(Collectors.toList());
+                        field.set(instance, values);
+                    } else if (isArray(field)){
+                        float[] values = new float[count];
+
+                        for(int i=0; i<count; i++)
+                            values[i] = from[rnd.nextInt(0, from.length)];
+
                         field.set(instance, values);
                     } else {
                         field.set(instance, from[rnd.nextInt(0, from.length)]);
@@ -258,7 +305,7 @@ public class Generator<T> {
                     continue;
                 }
 
-                if((!isTypeOrArrayOfType(field, Long.class)) && !isType(field, long.class)){
+                if((!isTypeOrArrayOfTypeOrListOfType(field, Long.class)) && !isTypeOrArrayOfTypeOrListOfType(field, long.class)){
                     throw new InvalidTypeForAnnotationException(field.getType(), RandomLong.class);
                 } else {
                     RandomLong annotation = field.getAnnotation(RandomLong.class);
@@ -272,12 +319,187 @@ public class Generator<T> {
                     long max = annotation.max();
                     long min = annotation.min();
 
-                    if(annotation.from().length == 0 && !isArray(field)) {
+                    if(annotation.from().length == 0 && !isList(field) && !isArray(field)) {
                         field.set(instance, generator.generate(min, max));
-                    } else if (annotation.from().length == 0 && isArray(field)){
+                    } else if (annotation.from().length == 0 && isList(field)){
                         field.set(instance, generator.generate(min, max, count));
-                    } else if (isArray(field)){
+                    } else if (annotation.from().length == 0 && isArray(field)){
+                        field.set(instance, generator.generateArray(min, max, count));
+                    } else if (isList(field)){
                         List <Long> values = Stream.generate(() -> from[rnd.nextInt(0, from.length)]).limit(count).collect(Collectors.toList());
+                        field.set(instance, values);
+                    } else if (isArray(field)){
+                        long[] values = new long[count];
+
+                        for(int i=0; i<count; i++)
+                            values[i] = from[rnd.nextInt(0, from.length)];
+
+                        field.set(instance, values);
+                    } else {
+                        field.set(instance, from[rnd.nextInt(0, from.length)]);
+                    }
+                }
+            }
+
+            currentClass = currentClass.getSuperclass();
+        }
+
+        return instance;
+    }
+    private T processShortFields(T instance) throws InvalidTypeForAnnotationException, InvalidGeneratorException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
+
+        Class currentClass = this._type;
+
+        while(currentClass.getSuperclass() != null){
+            for(Field field: currentClass.getDeclaredFields()){
+                ShortGenerator generator = _defaultShortGenerator;
+
+                field.setAccessible(true);
+
+                if(!field.isAnnotationPresent(RandomShort.class)){
+                    continue;
+                }
+
+                if((!isTypeOrArrayOfTypeOrListOfType(field, Short.class)) && !isTypeOrArrayOfTypeOrListOfType(field, short.class)){
+                    throw new InvalidTypeForAnnotationException(field.getType(), RandomShort.class);
+                } else {
+                    RandomShort annotation = field.getAnnotation(RandomShort.class);
+
+                    if(!annotation.generator().getCanonicalName().equals(LongGenerator.class.getCanonicalName())){
+                        generator = (ShortGenerator) createGeneratorForType(annotation.generator(), ShortGenerator.class);
+                    }
+
+                    int count = annotation.count() >= 0 ? annotation.count() : rnd.nextInt(annotation.minCount(), annotation.maxCount()+1);
+                    short [] from = annotation.from();
+                    short max = annotation.max();
+                    short min = annotation.min();
+
+                    if(annotation.from().length == 0 && !isList(field) && !isArray(field)) {
+                        field.set(instance, generator.generate(min, max));
+                    } else if (annotation.from().length == 0 && isList(field)){
+                        field.set(instance, generator.generate(min, max, count));
+                    } else if (annotation.from().length == 0 && isArray(field)){
+                        field.set(instance, generator.generateArray(min, max, count));
+                    } else if (isList(field)){
+                        List <Short> values = Stream.generate(() -> from[rnd.nextInt(0, from.length)]).limit(count).collect(Collectors.toList());
+                        field.set(instance, values);
+                    } else if (isArray(field)){
+                        short[] values = new short[count];
+
+                        for(int i=0; i<count; i++)
+                            values[i] = from[rnd.nextInt(0, from.length)];
+
+                        field.set(instance, values);
+                    } else {
+                        field.set(instance, from[rnd.nextInt(0, from.length)]);
+                    }
+                }
+            }
+
+            currentClass = currentClass.getSuperclass();
+        }
+
+        return instance;
+    }
+    private T processByteFields(T instance) throws InvalidTypeForAnnotationException, InvalidGeneratorException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
+
+        Class currentClass = this._type;
+
+        while(currentClass.getSuperclass() != null){
+            for(Field field: currentClass.getDeclaredFields()){
+                ByteGenerator generator = _defaultByteGenerator;
+
+                field.setAccessible(true);
+
+                if(!field.isAnnotationPresent(RandomByte.class)){
+                    continue;
+                }
+
+                if((!isTypeOrArrayOfTypeOrListOfType(field, Byte.class)) && !isTypeOrArrayOfTypeOrListOfType(field, byte.class)){
+                    throw new InvalidTypeForAnnotationException(field.getType(), RandomByte.class);
+                } else {
+                    RandomByte annotation = field.getAnnotation(RandomByte.class);
+
+                    if(!annotation.generator().getCanonicalName().equals(LongGenerator.class.getCanonicalName())){
+                        generator = (ByteGenerator) createGeneratorForType(annotation.generator(), ByteGenerator.class);
+                    }
+
+                    int count = annotation.count() >= 0 ? annotation.count() : rnd.nextInt(annotation.minCount(), annotation.maxCount()+1);
+                    byte [] from = annotation.from();
+                    byte max = annotation.max();
+                    byte min = annotation.min();
+
+                    if(annotation.from().length == 0 && !isList(field) && !isArray(field)) {
+                        field.set(instance, generator.generate(min, max));
+                    } else if (annotation.from().length == 0 && isList(field)){
+                        field.set(instance, generator.generate(min, max, count));
+                    } else if (annotation.from().length == 0 && isArray(field)){
+                        field.set(instance, generator.generateArray(min, max, count));
+                    } else if (isList(field)){
+                        List <Byte> values = Stream.generate(() -> from[rnd.nextInt(0, from.length)]).limit(count).collect(Collectors.toList());
+                        field.set(instance, values);
+                    } else if (isArray(field)){
+                        byte[] values = new byte[count];
+
+                        for(int i=0; i<count; i++)
+                            values[i] = from[rnd.nextInt(0, from.length)];
+
+                        field.set(instance, values);
+                    } else {
+                        field.set(instance, from[rnd.nextInt(0, from.length)]);
+                    }
+                }
+            }
+
+            currentClass = currentClass.getSuperclass();
+        }
+
+        return instance;
+    }
+    private T processCharacterFields(T instance) throws InvalidTypeForAnnotationException, InvalidGeneratorException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
+
+        Class currentClass = this._type;
+
+        while(currentClass.getSuperclass() != null){
+            for(Field field: currentClass.getDeclaredFields()){
+                CharacterGenerator generator = _defaultCharacterGenerator;
+
+                field.setAccessible(true);
+
+                if(!field.isAnnotationPresent(RandomCharacter.class)){
+                    continue;
+                }
+
+                if((!isTypeOrArrayOfTypeOrListOfType(field, Character.class)) && !isTypeOrArrayOfTypeOrListOfType(field, char.class)){
+                    throw new InvalidTypeForAnnotationException(field.getType(), RandomCharacter.class);
+                } else {
+                    RandomCharacter annotation = field.getAnnotation(RandomCharacter.class);
+
+                    if(!annotation.generator().getCanonicalName().equals(LongGenerator.class.getCanonicalName())){
+                        generator = (CharacterGenerator) createGeneratorForType(annotation.generator(), CharacterGenerator.class);
+                    }
+
+                    int count = annotation.count() >= 0 ? annotation.count() : rnd.nextInt(annotation.minCount(), annotation.maxCount()+1);
+                    char [] from = annotation.from();
+
+                    if(annotation.from().length == 0 && !isList(field) && !isArray(field)) {
+                        field.set(instance, generator.generate());
+                    } else if (annotation.from().length == 0 && isList(field)){
+                        field.set(instance, generator.generate(count));
+                    } else if (annotation.from().length == 0 && isArray(field)){
+                        field.set(instance, generator.generateArray(count));
+                    } else if (isList(field)){
+                        List <Character> values = Stream.generate(() -> from[rnd.nextInt(0, from.length)]).limit(count).collect(Collectors.toList());
+                        field.set(instance, values);
+                    } else if (isArray(field)){
+                        char[] values = new char[count];
+
+                        for(int i=0; i<count; i++)
+                            values[i] = from[rnd.nextInt(0, from.length)];
+
                         field.set(instance, values);
                     } else {
                         field.set(instance, from[rnd.nextInt(0, from.length)]);
@@ -304,7 +526,7 @@ public class Generator<T> {
                     continue;
                 }
 
-                if((!isTypeOrArrayOfType(field, Boolean.class)) && !isType(field, boolean.class)){
+                if((!isTypeOrArrayOfTypeOrListOfType(field, Boolean.class)) && !isTypeOrArrayOfTypeOrListOfType(field, boolean.class)){
                     throw new InvalidTypeForAnnotationException(field.getType(), RandomBoolean.class);
                 } else {
                     RandomBoolean annotation = field.getAnnotation(RandomBoolean.class);
@@ -315,8 +537,10 @@ public class Generator<T> {
 
                     int count = annotation.count() >= 0 ? annotation.count() : rnd.nextInt(annotation.minCount(), annotation.maxCount()+1);
 
-                    if (isArray(field)){
+                    if (isList(field)){
                         field.set(instance, generator.generate(count));
+                    } else if (isArray(field)){
+                        field.set(instance, generator.generateArray(count));
                     } else {
                         field.set(instance, generator.generate());
                     }
@@ -345,29 +569,31 @@ public class Generator<T> {
 
                 int count = annotation.count() >= 0 ? annotation.count() : rnd.nextInt(annotation.minCount(), annotation.maxCount()+1);
 
-                if (isArray(field)){
-                    Generator generator = Generator
-                            .forType(getListType(field))
-                            .withDefaultBooleanGenerator(_defaultBooleanGenerator.getClass())
-                            .withDefaultDoubleGenerator(_defaultDoubleGenerator.getClass())
-                            .withDefaultFloatGenerator(_defaultFloatGenerator.getClass())
-                            .withDefaultIntegerGenerator(_defaultIntegerGenerator.getClass())
-                            .withDefaultLongGenerator(_defaultLongGenerator.getClass())
-                            .withDefaultStringGenerator(_defaultStringGenerator.getClass());
+                Class type = field.getType();
 
+                if (isList(field))
+                    type = getListType(field);
+                else if(isArray(field))
+                    type = getArrayType(field);
+
+                Generator generator = Generator
+                        .forType(type)
+                        .withDefaultBooleanGenerator(_defaultBooleanGenerator.getClass())
+                        .withDefaultDoubleGenerator(_defaultDoubleGenerator.getClass())
+                        .withDefaultFloatGenerator(_defaultFloatGenerator.getClass())
+                        .withDefaultIntegerGenerator(_defaultIntegerGenerator.getClass())
+                        .withDefaultLongGenerator(_defaultLongGenerator.getClass())
+                        .withDefaultStringGenerator(_defaultStringGenerator.getClass())
+                        .withDefaultShortGenerator(_defaultShortGenerator.getClass())
+                        .withDefaultCharacterGenerator(_defaultCharacterGenerator.getClass())
+                        .withDefaultByteGenerator(_defaultByteGenerator.getClass());
+
+                if(isList(field))
                     field.set(instance, generator.generate(count));
-                } else {
-                    Generator generator = Generator
-                            .forType(field.getType())
-                            .withDefaultBooleanGenerator(_defaultBooleanGenerator.getClass())
-                            .withDefaultDoubleGenerator(_defaultDoubleGenerator.getClass())
-                            .withDefaultFloatGenerator(_defaultFloatGenerator.getClass())
-                            .withDefaultIntegerGenerator(_defaultIntegerGenerator.getClass())
-                            .withDefaultLongGenerator(_defaultLongGenerator.getClass())
-                            .withDefaultStringGenerator(_defaultStringGenerator.getClass());
-
+                else if(isArray(field))
+                    field.set(instance, generator.generate(count).toArray());
+                else
                     field.set(instance, generator.generate());
-                }
             }
 
             currentClass = currentClass.getSuperclass();
@@ -406,6 +632,18 @@ public class Generator<T> {
     }
     public Generator withDefaultBooleanGenerator(Class<?> c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
         this._defaultBooleanGenerator = (BooleanGenerator) createGeneratorForType(c, BooleanGenerator.class);
+        return this;
+    }
+    public Generator withDefaultShortGenerator(Class<?> c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
+        this._defaultShortGenerator = (ShortGenerator) createGeneratorForType(c, ShortGenerator.class);
+        return this;
+    }
+    public Generator withDefaultCharacterGenerator(Class<?> c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
+        this._defaultCharacterGenerator = (CharacterGenerator) createGeneratorForType(c, CharacterGenerator.class);
+        return this;
+    }
+    public Generator withDefaultByteGenerator(Class<?> c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
+        this._defaultByteGenerator = (ByteGenerator) createGeneratorForType(c, ByteGenerator.class);
         return this;
     }
 

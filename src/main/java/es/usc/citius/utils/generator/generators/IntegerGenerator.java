@@ -5,4 +5,5 @@ import java.util.List;
 public interface IntegerGenerator {
     int generate(int min, int max);
     List<Integer> generate(int min, int max, int count);
+    int[] generateArray(int min, int max, int count);
 }
