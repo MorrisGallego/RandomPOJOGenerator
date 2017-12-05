@@ -81,6 +81,9 @@ public class MultiTypeGenerator {
         generators.add(generator);
         return this;
     }
+    public GeneratorConfigurator addGenerator(){
+        return new GeneratorConfigurator(this);
+    }
 
     public Object generate(){
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
@@ -91,5 +94,59 @@ public class MultiTypeGenerator {
     }
     public Stream<?> stream(){
         return Stream.generate(this::generate);
+    }
+
+    public class GeneratorConfigurator{
+        Generator g;
+        MultiTypeGenerator parentGenerator;
+
+        GeneratorConfigurator(MultiTypeGenerator parent){
+            parentGenerator = parent;
+        }
+
+        public GeneratorConfigurator withDefaultStringGenerator(Class c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
+            g = g.withDefaultStringGenerator(c);
+            return this;
+        }
+        public GeneratorConfigurator withDefaultDoubleGenerator(Class c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
+            g = g.withDefaultDoubleGenerator(c);
+            return this;
+        }
+        public GeneratorConfigurator withDefaultIntegerGenerator(Class c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
+            g = g.withDefaultIntegerGenerator(c);
+            return this;
+        }
+        public GeneratorConfigurator withDefaultFloatGenerator(Class c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
+            g = g.withDefaultFloatGenerator(c);
+            return this;
+        }
+        public GeneratorConfigurator withDefaultLongGenerator(Class c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
+            g = g.withDefaultLongGenerator(c);
+            return this;
+        }
+        public GeneratorConfigurator withDefaultBooleanGenerator(Class c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
+            g = g.withDefaultBooleanGenerator(c);
+            return this;
+        }
+        public GeneratorConfigurator withDefaultShortGenerator(Class c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
+            g = g.withDefaultShortGenerator(c);
+            return this;
+        }
+        public GeneratorConfigurator withDefaultCharacterGenerator(Class c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
+            g = g.withDefaultCharacterGenerator(c);
+            return this;
+        }
+        public GeneratorConfigurator withDefaultByteGenerator(Class c) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
+            g = g.withDefaultByteGenerator(c);
+            return this;
+        }
+        public GeneratorConfigurator forType(Class type) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
+            g = Generator.forType(type);
+            return this;
+        }
+        public MultiTypeGenerator add() {
+            this.parentGenerator.addGenerator(g);
+            return this.parentGenerator;
+        }
     }
 }

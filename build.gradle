@@ -9,3 +9,7 @@ sourceCompatibility = 1.8
 repositories {
     mavenCentral()
 }
+
+dependencies {
+    testCompile 'org.kohsuke:wordnet-random-name:1.3'
+}

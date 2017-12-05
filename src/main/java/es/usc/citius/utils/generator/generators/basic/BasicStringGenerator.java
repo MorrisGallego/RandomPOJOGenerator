@@ -2,9 +2,7 @@ package es.usc.citius.utils.generator.generators.basic;
 
 import es.usc.citius.utils.generator.generators.StringGenerator;
 
-import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class BasicStringGenerator implements StringGenerator{
@@ -17,8 +15,5 @@ public class BasicStringGenerator implements StringGenerator{
         Stream.generate(generator::generate).limit(length).forEach(sb::append);
 
         return sb.toString();
-    }
-    public List<String> generate(int length, int minLength, int maxLength, int count){
-        return Stream.generate(() -> generate(length, minLength, maxLength)).limit(count).collect(Collectors.toList());
     }
 }

@@ -46,4 +46,4 @@ If you need it, you can generate a single object, a list of objects or a stream 
 ## Generating multiple types at once
 The included class `es.usc.citius.utils.generator.MultiTypeGenerator` allows you to generate objects from multiple types in a single entry point. 
 
-Apart from configuring it automatically (using the method `.forTypes(Class ... types)`) you can add custom configured generators manually using the method `.addGenerator(Generator g)`.
+Apart from configuring it automatically (using the method `.forTypes(Class ... types)`) you can add custom configured generators manually via the methods `.addGenerator()` and `.addGenerator(Generator g)`.

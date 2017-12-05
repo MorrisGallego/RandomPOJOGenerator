@@ -3,31 +3,28 @@ package es.usc.citius.utils.testing.model;
 import es.usc.citius.utils.generator.annotations.RandomObject;
 import es.usc.citius.utils.generator.annotations.RandomString;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Person {
     @RandomObject
-    private ArrayList<Name> name;
+    private Name name;
     @RandomObject
     private Address address;
-    @RandomString(length = 9)
+    @RandomString(generator = es.usc.citius.utils.testing.generator.CustomIdGenerator.class)
     private String id;
     @RandomString(from = {"666777888", "876947521", "554671892"})
     private String phoneNumber;
 
     public Person(){}
-    public Person(ArrayList<Name> name, Address address, String id, String phoneNumber) {
+    public Person(Name name, Address address, String id, String phoneNumber) {
         this.name = name;
         this.address = address;
         this.id = id;
         this.phoneNumber = phoneNumber;
     }
 
-    public List<Name> getName() {
+    public Name getName() {
         return name;
     }
-    public void setName(ArrayList<Name> name) {
+    public void setName(Name name) {
         this.name = name;
     }
     public Address getAddress() {
@@ -56,10 +53,10 @@ public class Person {
 
         Person person = (Person) o;
 
-        if (name != null ? !name.equals(person.name) : person.name != null) return false;
-        if (address != null ? !address.equals(person.address) : person.address != null) return false;
-        if (id != null ? !id.equals(person.id) : person.id != null) return false;
-        return phoneNumber != null ? phoneNumber.equals(person.phoneNumber) : person.phoneNumber == null;
+        return  (name != null ? name.equals(person.name) : person.name == null) &&
+                (address != null ? address.equals(person.address) : person.address == null) &&
+                (id != null ? id.equals(person.id) : person.id == null) &&
+                (phoneNumber != null ? phoneNumber.equals(person.phoneNumber) : person.phoneNumber == null);
     }
     @Override
     public int hashCode() {

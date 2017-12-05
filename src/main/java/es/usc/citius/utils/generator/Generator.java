@@ -366,7 +366,7 @@ public class Generator<T> {
                 } else {
                     RandomShort annotation = field.getAnnotation(RandomShort.class);
 
-                    if(!annotation.generator().getCanonicalName().equals(LongGenerator.class.getCanonicalName())){
+                    if(!annotation.generator().getCanonicalName().equals(ShortGenerator.class.getCanonicalName())){
                         generator = (ShortGenerator) createGeneratorForType(annotation.generator(), ShortGenerator.class);
                     }
 
@@ -422,7 +422,7 @@ public class Generator<T> {
                 } else {
                     RandomByte annotation = field.getAnnotation(RandomByte.class);
 
-                    if(!annotation.generator().getCanonicalName().equals(LongGenerator.class.getCanonicalName())){
+                    if(!annotation.generator().getCanonicalName().equals(ByteGenerator.class.getCanonicalName())){
                         generator = (ByteGenerator) createGeneratorForType(annotation.generator(), ByteGenerator.class);
                     }
 
@@ -478,7 +478,7 @@ public class Generator<T> {
                 } else {
                     RandomCharacter annotation = field.getAnnotation(RandomCharacter.class);
 
-                    if(!annotation.generator().getCanonicalName().equals(LongGenerator.class.getCanonicalName())){
+                    if(!annotation.generator().getCanonicalName().equals(CharacterGenerator.class.getCanonicalName())){
                         generator = (CharacterGenerator) createGeneratorForType(annotation.generator(), CharacterGenerator.class);
                     }
 
@@ -552,7 +552,7 @@ public class Generator<T> {
 
         return instance;
     }
-    private T processObjectFields(T instance) throws InvalidTypeForAnnotationException, InvalidGeneratorException, IllegalAccessException, InstantiationException, ClassNotFoundException {
+    private T processObjectFields(T instance) throws InvalidGeneratorException, IllegalAccessException, InstantiationException, ClassNotFoundException {
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
 
         Class currentClass = this._type;
