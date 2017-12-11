@@ -9,6 +9,6 @@ public class BasicByteGenerator implements ByteGenerator {
     public byte generate(Field field, byte min, byte max){
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
 
-        return (byte)rnd.nextInt(min, max+1);
+        return (byte)rnd.nextInt(min, max);
     }
 }

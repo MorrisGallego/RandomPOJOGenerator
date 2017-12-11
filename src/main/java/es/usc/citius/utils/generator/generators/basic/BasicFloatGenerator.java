@@ -12,7 +12,7 @@ public class BasicFloatGenerator implements FloatGenerator{
         return Double.valueOf(
                 rnd.nextDouble(
                         Double.valueOf(Float.valueOf(min).toString()),
-                        Double.valueOf(Float.valueOf(Math.min(max+1, Float.MAX_VALUE)).toString())))
+                        Double.valueOf(Float.valueOf(max).toString())))
                         .floatValue();
     }
 }

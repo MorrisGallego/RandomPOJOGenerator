@@ -9,6 +9,6 @@ public class BasicIntegerGenerator implements IntegerGenerator {
     public int generate(Field field, int min, int max) {
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
 
-        return rnd.nextInt(min, Math.max(max + 1, Integer.MAX_VALUE));
+        return rnd.nextInt(min, max);
     }
 }

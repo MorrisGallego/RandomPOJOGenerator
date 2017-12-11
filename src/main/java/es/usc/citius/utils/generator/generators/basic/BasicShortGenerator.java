@@ -9,6 +9,6 @@ public class BasicShortGenerator implements ShortGenerator {
     public short generate(Field field, short min, short max){
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
 
-        return (short)rnd.nextInt(min, Math.min((int)max+1, (int)Short.MAX_VALUE));
+        return (short)rnd.nextInt(min, max);
     }
 }
