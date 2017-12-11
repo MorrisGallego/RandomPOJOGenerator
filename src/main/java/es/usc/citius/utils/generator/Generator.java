@@ -100,11 +100,11 @@ public class Generator<T> {
                     int minLength = annotation.minLength();
 
                     if(annotation.from().length == 0 && !isList(field) && !isArray(field)) {
-                        field.set(instance, generator.generate(length, minLength, maxLength));
+                        field.set(instance, generator.generate(field, length, minLength, maxLength));
                     } else if (annotation.from().length == 0 && isList(field)){
-                        field.set(instance, generator.generate(length, minLength, maxLength, count));
+                        field.set(instance, generator.generate(field, length, minLength, maxLength, count));
                     } else if (annotation.from().length == 0 && isArray(field)){
-                        field.set(instance, generator.generate(length, minLength, maxLength, count).toArray());
+                        field.set(instance, generator.generateArray(field, length, minLength, maxLength, count));
                     } else if (isList(field)){
                         List <String> values = Stream.generate(() -> from[rnd.nextInt(0, from.length)]).limit(count).collect(Collectors.toList());
                         field.set(instance, values);
@@ -151,11 +151,11 @@ public class Generator<T> {
                     double min = annotation.min();
 
                     if(annotation.from().length == 0 && !isList(field) && !isArray(field)) {
-                        field.set(instance, generator.generate(min, max));
+                        field.set(instance, generator.generate(field, min, max));
                     } else if (annotation.from().length == 0 && isList(field)){
-                        field.set(instance, generator.generate(min, max, count));
+                        field.set(instance, generator.generate(field, min, max, count));
                     } else if (annotation.from().length == 0 && isArray(field)){
-                        field.set(instance, generator.generateArray(min, max, count));
+                        field.set(instance, generator.generateArray(field, min, max, count));
                     } else if (isList(field)){
                         List <Double> values = Stream.generate(() -> from[rnd.nextInt(0, from.length)]).limit(count).collect(Collectors.toList());
                         field.set(instance, values);
@@ -207,11 +207,11 @@ public class Generator<T> {
                     int min = annotation.min();
 
                     if(annotation.from().length == 0 && !isList(field) && !isArray(field)) {
-                        field.set(instance, generator.generate(min, max));
+                        field.set(instance, generator.generate(field, min, max));
                     } else if (annotation.from().length == 0 && isList(field)){
-                        field.set(instance, generator.generate(min, max, count));
+                        field.set(instance, generator.generate(field, min, max, count));
                     } else if (annotation.from().length == 0 && isArray(field)){
-                        field.set(instance, generator.generateArray(min, max, count));
+                        field.set(instance, generator.generateArray(field, min, max, count));
                     } else if (isList(field)){
                         List <Integer> values = Stream.generate(() -> from[rnd.nextInt(0, from.length)]).limit(count).collect(Collectors.toList());
                         field.set(instance, values);
@@ -263,11 +263,11 @@ public class Generator<T> {
                     float min = annotation.min();
 
                     if(annotation.from().length == 0 && !isList(field) && !isArray(field)) {
-                        field.set(instance, generator.generate(min, max));
+                        field.set(instance, generator.generate(field, min, max));
                     } else if (annotation.from().length == 0 && isList(field)){
-                        field.set(instance, generator.generate(min, max, count));
+                        field.set(instance, generator.generate(field, min, max, count));
                     } else if (annotation.from().length == 0 && isArray(field)){
-                        field.set(instance, generator.generateArray(min, max, count));
+                        field.set(instance, generator.generateArray(field, min, max, count));
                     } else if (isList(field)){
                         List <Float> values = Stream.generate(() -> from[rnd.nextInt(0, from.length)]).limit(count).collect(Collectors.toList());
                         field.set(instance, values);
@@ -320,11 +320,11 @@ public class Generator<T> {
                     long min = annotation.min();
 
                     if(annotation.from().length == 0 && !isList(field) && !isArray(field)) {
-                        field.set(instance, generator.generate(min, max));
+                        field.set(instance, generator.generate(field, min, max));
                     } else if (annotation.from().length == 0 && isList(field)){
-                        field.set(instance, generator.generate(min, max, count));
+                        field.set(instance, generator.generate(field, min, max, count));
                     } else if (annotation.from().length == 0 && isArray(field)){
-                        field.set(instance, generator.generateArray(min, max, count));
+                        field.set(instance, generator.generateArray(field, min, max, count));
                     } else if (isList(field)){
                         List <Long> values = Stream.generate(() -> from[rnd.nextInt(0, from.length)]).limit(count).collect(Collectors.toList());
                         field.set(instance, values);
@@ -376,11 +376,11 @@ public class Generator<T> {
                     short min = annotation.min();
 
                     if(annotation.from().length == 0 && !isList(field) && !isArray(field)) {
-                        field.set(instance, generator.generate(min, max));
+                        field.set(instance, generator.generate(field, min, max));
                     } else if (annotation.from().length == 0 && isList(field)){
-                        field.set(instance, generator.generate(min, max, count));
+                        field.set(instance, generator.generate(field, min, max, count));
                     } else if (annotation.from().length == 0 && isArray(field)){
-                        field.set(instance, generator.generateArray(min, max, count));
+                        field.set(instance, generator.generateArray(field, min, max, count));
                     } else if (isList(field)){
                         List <Short> values = Stream.generate(() -> from[rnd.nextInt(0, from.length)]).limit(count).collect(Collectors.toList());
                         field.set(instance, values);
@@ -432,11 +432,11 @@ public class Generator<T> {
                     byte min = annotation.min();
 
                     if(annotation.from().length == 0 && !isList(field) && !isArray(field)) {
-                        field.set(instance, generator.generate(min, max));
+                        field.set(instance, generator.generate(field, min, max));
                     } else if (annotation.from().length == 0 && isList(field)){
-                        field.set(instance, generator.generate(min, max, count));
+                        field.set(instance, generator.generate(field, min, max, count));
                     } else if (annotation.from().length == 0 && isArray(field)){
-                        field.set(instance, generator.generateArray(min, max, count));
+                        field.set(instance, generator.generateArray(field, min, max, count));
                     } else if (isList(field)){
                         List <Byte> values = Stream.generate(() -> from[rnd.nextInt(0, from.length)]).limit(count).collect(Collectors.toList());
                         field.set(instance, values);
@@ -486,11 +486,11 @@ public class Generator<T> {
                     char [] from = annotation.from();
 
                     if(annotation.from().length == 0 && !isList(field) && !isArray(field)) {
-                        field.set(instance, generator.generate());
+                        field.set(instance, generator.generate(field));
                     } else if (annotation.from().length == 0 && isList(field)){
-                        field.set(instance, generator.generate(count));
+                        field.set(instance, generator.generate(field, count));
                     } else if (annotation.from().length == 0 && isArray(field)){
-                        field.set(instance, generator.generateArray(count));
+                        field.set(instance, generator.generateArray(field, count));
                     } else if (isList(field)){
                         List <Character> values = Stream.generate(() -> from[rnd.nextInt(0, from.length)]).limit(count).collect(Collectors.toList());
                         field.set(instance, values);
@@ -538,11 +538,11 @@ public class Generator<T> {
                     int count = annotation.count() >= 0 ? annotation.count() : rnd.nextInt(annotation.minCount(), annotation.maxCount()+1);
 
                     if (isList(field)){
-                        field.set(instance, generator.generate(count));
+                        field.set(instance, generator.generate(field, count));
                     } else if (isArray(field)){
-                        field.set(instance, generator.generateArray(count));
+                        field.set(instance, generator.generateArray(field, count));
                     } else {
-                        field.set(instance, generator.generate());
+                        field.set(instance, generator.generate(field));
                     }
                 }
             }

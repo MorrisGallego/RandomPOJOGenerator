@@ -2,12 +2,13 @@ package es.usc.citius.utils.generator.generators.basic;
 
 import es.usc.citius.utils.generator.generators.IntegerGenerator;
 
+import java.lang.reflect.Field;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class BasicIntegerGenerator implements IntegerGenerator{
-    public int generate(int min, int max){
+public class BasicIntegerGenerator implements IntegerGenerator {
+    public int generate(Field field, int min, int max) {
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
 
-        return rnd.nextInt(min, max+1);
+        return rnd.nextInt(min, Math.max(max + 1, Integer.MAX_VALUE));
     }
 }

@@ -2,12 +2,13 @@ package es.usc.citius.utils.generator.generators.basic;
 
 import es.usc.citius.utils.generator.generators.ShortGenerator;
 
+import java.lang.reflect.Field;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class BasicShortGenerator implements ShortGenerator {
-    public short generate(short min, short max){
+    public short generate(Field field, short min, short max){
         ThreadLocalRandom rnd = ThreadLocalRandom.current();
 
-        return (short)rnd.nextInt(min, max+1);
+        return (short)rnd.nextInt(min, Math.min((int)max+1, (int)Short.MAX_VALUE));
     }
 }
