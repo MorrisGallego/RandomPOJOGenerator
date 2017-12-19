@@ -647,8 +647,13 @@ public class Generator<T> {
         return this;
     }
 
-    public static Generator<?> forType(Class type) throws InvalidGeneratorException, IllegalAccessException, InstantiationException {
-        return ((Generator<?>)createGeneratorForType(Generator.class, Generator.class)).setType(type);
+    public static Generator<?> forType(Class type){
+        try {
+            return ((Generator<?>)createGeneratorForType(Generator.class, Generator.class)).setType(type);
+        } catch (InvalidGeneratorException | IllegalAccessException | InstantiationException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private T random(){
