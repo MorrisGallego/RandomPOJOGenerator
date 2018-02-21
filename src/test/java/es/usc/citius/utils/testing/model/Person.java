@@ -1,20 +1,25 @@
 package es.usc.citius.utils.testing.model;
 
+import es.usc.citius.utils.generator.annotations.RandomBoolean;
 import es.usc.citius.utils.generator.annotations.RandomObject;
 import es.usc.citius.utils.generator.annotations.RandomString;
+import es.usc.citius.utils.testing.generator.IdGenerator;
 
 public class Person {
+    @RandomBoolean
+    private boolean active;
     @RandomObject
     private Name name;
     @RandomObject
     private Address address;
-    @RandomString(generator = es.usc.citius.utils.testing.generator.CustomIdGenerator.class)
+    @RandomString(generator = IdGenerator.class)
     private String id;
     @RandomString(from = {"666777888", "876947521", "554671892"})
     private String phoneNumber;
 
     public Person(){}
-    public Person(Name name, Address address, String id, String phoneNumber) {
+    public Person(boolean active, Name name, Address address, String id, String phoneNumber) {
+        this.active = active;
         this.name = name;
         this.address = address;
         this.id = id;
@@ -44,6 +49,12 @@ public class Person {
     }
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+    public boolean isActive() {
+        return active;
+    }
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     @Override

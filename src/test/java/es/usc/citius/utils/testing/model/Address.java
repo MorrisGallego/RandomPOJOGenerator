@@ -3,12 +3,11 @@ package es.usc.citius.utils.testing.model;
 import es.usc.citius.utils.generator.annotations.RandomCharacter;
 import es.usc.citius.utils.generator.annotations.RandomInteger;
 import es.usc.citius.utils.generator.annotations.RandomString;
-import es.usc.citius.utils.testing.generator.CustomIntegerGenerator;
 
 public class Address {
     @RandomString()
     private String street;
-    @RandomInteger(generator = CustomIntegerGenerator.class)
+    @RandomInteger(min = 0, max = 150)
     private int number;
     @RandomInteger(min = 0, max = 100)
     private int rating;
@@ -64,7 +63,7 @@ public class Address {
                 ", rating=" + rating +
                 ", door='" + door + '\'' +
                 ", postalCode='" + postalCode + '\'' +
-                '}';
+                "}\n";
     }
 
     @Override

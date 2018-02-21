@@ -1,14 +1,15 @@
 package es.usc.citius.utils.testing.model;
 
 import es.usc.citius.utils.generator.annotations.RandomString;
+import es.usc.citius.utils.testing.generator.NameGenerator;
 
 import java.util.Arrays;
 import java.util.List;
 
 public class Name {
-    @RandomString(from = {"Manolo", "Paquita", "Jimeno", "Leonarda"})
+    @RandomString(generator = NameGenerator.class)
     private String firstname;
-    @RandomString(from = {"Smith", "Jackson", "Tribiani", "Geller"}, count = 2)
+    @RandomString(generator = NameGenerator.class, count = 2)
     private List<String> lastname;
 
     public Name(){}
